@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f5f7fb" />
+  <meta name="description" content="Class game competition leaderboard." />
+  <title>Class Leaderboard</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #192640;
+      --muted: #748098;
+      --line: #e7ebf2;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 0;
+      min-height: 100vh;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f5f7fb;
+      color: var(--ink);
+      padding: 24px 14px;
+    }
+    header { width: 100%; }
+    main { width: min(900px, 100%); }
+    .wrap { width: min(900px, 100%); margin: 0 auto 16px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; }
+    .topbar h1 { margin: 0; font-size: 16px; }
+    .rings { position: relative; width: 68px; height: 37px; }
+    .ring {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 3px solid;
+      border-radius: 50%;
+    }
+    .ring.blue { left: 0; top: 0; border-color: #0085c7; z-index: 1; }
+    .ring.black { left: 22px; top: 0; border-color: #000; z-index: 2; }
+    .ring.red { left: 44px; top: 0; border-color: #df0024; z-index: 1; }
+    .ring.yellow { left: 11px; top: 12px; border-color: #f4c300; z-index: 3; }
+    .ring.green { left: 33px; top: 12px; border-color: #009f3d; z-index: 4; }
+    .heading { margin-bottom: 12px; }
+    .heading h1 {
+      font-size: clamp(22px, 3vw, 28px);
+      margin: 0;
+      letter-spacing: -.05em;
+      line-height: 1.2;
+    }
+    .leaderboard {
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid #e2e8f1;
+      background: white;
+      box-shadow: 0 8px 24px rgba(26, 43, 75, .05);
+    }
+    .table-labels, .team-row {
+      display: grid;
+      grid-template-columns: 42px minmax(150px, .9fr) minmax(160px, 1.3fr) 145px;
+      gap: 10px;
+      align-items: center;
+    }
+    .table-labels {
+      padding: 9px 14px;
+      background: #f9fbff;
+      border-bottom: 1px solid var(--line);
+      color: #8590a3;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+    .table-labels > :last-child { text-align: right; }
+    .team-row { padding: 9px 14px; border-bottom: 1px solid #edf0f5; }
+    .team-row:last-child { border-bottom: 0; }
+    .rank { color: #8895aa; font-size: 16px; font-weight: 850; }
+    .rank.medal { font-size: 20px; }
+    .team-cell { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .team-name { min-width: 0; font-size: 13px; line-height: 1.25; overflow-wrap: anywhere; }
+    .members-cell { color: var(--muted); font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
+    .avatar {
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      border-radius: 9px;
+      background: #f0f4fa;
+      display: grid;
+      place-items: center;
+      font-size: 15px;
+    }
+    .avatar-pair {
+      width: 46px;
+      flex-basis: 46px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      font-size: 15px;
+    }
+    .score { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+    .score-value { text-align: right; white-space: nowrap; }
+    .score strong { display: block; font-size: 17px; letter-spacing: -.04em; }
+    .score small { color: var(--muted); font-size: 10px; }
+    .empty-board { padding: 20px 14px; text-align: center; color: var(--muted); }
+    @media (max-width: 600px) {
+      body { padding: 16px 10px; }
+      .wrap { margin-bottom: 12px; }
+      .heading h1 { font-size: 22px; }
+      .table-labels { display: none; }
+      .team-row {
+        display: grid;
+        grid-template-columns: 25px minmax(0, 1fr) auto;
+        grid-template-areas: "rank team score" "rank members score";
+        row-gap: 3px;
+        column-gap: 8px;
+        padding: 9px 10px;
+      }
+      .rank { grid-area: rank; font-size: 14px; }
+      .rank.medal { font-size: 18px; }
+      .team-cell { grid-area: team; gap: 7px; }
+      .team-name { font-size: 12px; }
+      .avatar { width: 29px; height: 29px; flex-basis: 29px; font-size: 12px; }
+      .avatar-pair { width: 40px; flex-basis: 40px; font-size: 12px; }
+      .members-cell { grid-area: members; font-size: 11px; }
+      .members-cell::before { content: "MEMBERS: "; font-size: 9px; font-weight: 800; letter-spacing: .04em; }
+      .score { grid-area: score; gap: 4px; }
+      .score strong { font-size: 15px; }
+      .score small { font-size: 9px; }
+    }
+  </style>
+</head>
+<body>
+   <header>
+    <div class="wrap topbar">
+      <h1>SEB-16</h1>
+      <div class="rings" aria-hidden="true">
+        <span class="ring blue"></span><span class="ring black"></span><span class="ring red"></span>
+        <span class="ring yellow"></span><span class="ring green"></span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="heading">
+      <h1>Debuging Olympics Leaderboard</h1>
+    </div>
+
+    <section class="leaderboard" aria-label="Class team leaderboard">
+      <div class="table-labels" aria-hidden="true">
+        <div>Rank</div><div>Team</div><div>Members</div><div>Points</div>
+      </div>
+      <div id="standings" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+      // Same key as the original site so your teams and scores carry over.
+      const STORAGE_KEY = 'game-olympics-teams-v1';
+      // Add new groups here, matching this shape:
+      // Groups here are added to saved teams when their IDs are not already present.
+      const starterTeams = [
+        { id: 'jihaya', name: 'jihaya', members: ['Khadija Alawani', 'Hajar', 'Nawraa'], emoji: '🍉', points: 36 },
+        { id: 'Ctrl+Alt+Elite', name: 'Ctrl+Alt+Elite', members: ['Aya', 'Khadija Yaser', 'Noor'], emoji: '🥇', points: 33},
+        { id: '404', name: '404', members: ['Zainab', 'Amal', 'Husain Ali'], emoji: '😻💻', points: 33 },
+        { id: 'Error', name: 'Error', members: ['Redha', 'Hussain', 'Fares'], emoji: '👋', points: 31.5 },
+        { id: 'Devs', name: 'Devs', members: ['Hasan Ali', 'Hasan Alqallaf', 'Ahmed'], emoji: '🎯', points: 26.5 },
+        { id: 'Unkown Name Group', name: 'Unkown Name Group', members: ['Tuqa', 'Kawthar','Maryam'], emoji: '👥', points: 20 },
+        { id: 'S', name: 'S', members: ['Shaidaa', 'Shaima'], emoji: '🎯', points: 16.5 },
+        { id: 'Heroes', name: 'Heroes', members: ['Sayed Jaafar', 'Jaafar'], emoji: '🐐', points: 15 },
+        { id: 'Group Without a Name', name: 'Group Without a Name', members: ['Michael', 'Ali'], emoji: '👥', points: 15 },
+        { id: 'infinity', name: 'infinity', members: ['Hamad', 'Adam'], emoji: '♾️', points: 11.5 },
+        { id: 'Joker', name: 'Joker', members: ['Nasser', 'Mohammed'], emoji: '🃏', points: 11.5 },
+      ];
+      const $ = (id) => document.getElementById(id);
+      let teams = loadTeams();
+
+      function loadTeams() {
+        try {
+          const value = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          if (Array.isArray(value)) {
+            const savedTeams = value.filter((t) => t && typeof t.id === 'string' && typeof t.name === 'string' && Array.isArray(t.members) && Number.isFinite(t.points));
+            const savedIds = new Set(savedTeams.map((team) => team.id));
+            const missingStarterTeams = starterTeams.filter((team) => !savedIds.has(team.id));
+            const updatedSavedTeams = savedTeams.map((team) => {
+              const starterTeam = starterTeams.find((starter) => starter.id === team.id);
+              return starterTeam
+                ? { ...team, name: starterTeam.name, members: [...starterTeam.members], emoji: starterTeam.emoji }
+                : team;
+            });
+            return [...updatedSavedTeams, ...missingStarterTeams.map((team) => ({ ...team, members: [...team.members] }))];
+          }
+        } catch (error) { /* Storage unavailable or invalid. */ }
+        return starterTeams.map((team) => ({ ...team, members: [...team.members] }));
+      }
+      function sortedTeams() {
+        return [...teams].sort((a, b) => b.points - a.points || a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true }) || a.id.localeCompare(b.id));
+      }
+      function el(tag, className, content) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (content !== undefined) node.textContent = content;
+        return node;
+      }
+      function render() {
+        const sorted = sortedTeams();
+        const standings = $('standings');
+        if (!sorted.length) {
+          standings.replaceChildren(el('div', 'empty-board', 'No teams yet.'));
+          return;
+        }
+        const medals = ['🥇', '🥈', '🥉'];
+        const teamRows = sorted.map((team, index) => {
+          const row = el('div', 'team-row');
+          const rank = el('div', `rank ${index < 3 ? 'medal' : ''}`, medals[index] || String(index + 1).padStart(2, '0'));
+          rank.setAttribute('aria-label', `Rank ${index + 1}`);
+          const info = el('div', 'team-cell');
+          const avatar = el('div', `avatar ${team.id === '404' ? 'avatar-pair' : ''}`);
+          if (team.id === '404') {
+            avatar.append(el('span', '', '😻'), el('span', '', '💻'));
+          } else {
+            avatar.textContent = team.emoji || '❔';
+          }
+          info.append(avatar, el('strong', 'team-name', team.name));
+          const members = el('div', 'members-cell', team.members.join(', '));
+          const score = el('div', 'score');
+          const scoreValue = el('div', 'score-value');
+          scoreValue.append(el('strong', '', String(team.points)), el('small', '', 'points'));
+          score.append(scoreValue);
+          row.append(rank, info, members, score);
+          return row;
+        });
+        standings.replaceChildren(...teamRows);
+      }
+      render();
+    })();
+  </script>
+</body>
+</html>
